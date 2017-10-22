@@ -15,7 +15,8 @@ class App extends Component {
       reviewCount: 0,
       web3: null,
       instance: null,
-      reviews: new Map()
+      reviews: new Map(),
+      movieDBkey: "9d15b8de0087f7fee6f70840777414d6"
     }
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -65,8 +66,19 @@ class App extends Component {
     this.state.instance.getReview(index).then((res) => {
       // console.log('Details for ' + index + ' are: ' + res[0] + ', ' + res[1].c[0] + ', ' + res[2] + ', ' + res[3] + ', ' + res[4]);
       let reviews = this.state.reviews;
-      reviews[res[4]] = [res[0], res[1].c[0], res[2], res[3]];
-      this.setState({ reviews: reviews });
+      fetch("https://api.themoviedb.org/3/find/" + res[3] + "?api_key=" + this.state.movieDBkey + "&language=en-US&external_source=imdb_id").then(results => {
+        return results.json();
+      }).then(data => {
+        if (data.movie_results.length > 0) {
+          console.log(data.movie_results[0]);
+          console.log(data.movie_results[0].title);
+          console.log(data.movie_results[0].poster_path);
+          reviews[res[4]] = [res[0], res[1].c[0], res[2], res[3], data.movie_results[0].title, data.movie_results[0].backdrop_path];
+        } else {
+          reviews[res[4]] = [res[0], res[1].c[0], res[2], res[3], "Unknown", "not found"];
+        }
+        this.setState({ reviews: reviews });
+      });
     })
   }
 
@@ -103,24 +115,25 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <nav className="navbar pure-menu pure-menu-horizontal">
-          <a href="#" className="pure-menu-heading pure-menu-link">Movie Reviews!</a>
-        </nav>
+      <div className="App" id="wrapper">
+        <section id="intro" className="wrapper featured style1">
+          <div className="inner">
+            <span className="image"><img src="images/pic01.jpg" alt="" /></span>
+            <div className="content">
+              <header>
+                <h1>Smart Movie Reviews</h1>
+                <p>The best place to check reviews.<br />
+                  Backed by an Ethereum smart contract,<br />
+                  so you know they can be trusted! ;-)</p>
+              </header>
+            </div>
+          </div>
+        </section>
 
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Welcome to Smart Movie Reviews</h1>
-              <form onSubmit={this.addReviewFromSubmit}>
-                <label htmlFor="rating">Rating (between 1 and 10):</label>
-                <input id="rating" name="formRating" min="1" max="10" onChange={this.handleInputChange}></input><br />
-                <label htmlFor="imdbTag">IMDB Tag:</label>
-                <input id="imdbTag" name="formImdbTag" onChange={this.handleInputChange}></input><br />
-                <label htmlFor="review">Review:</label>
-                <textarea id="review" name="formReview" onChange={this.handleInputChange}></textarea><br />
-                <input id="submit" type="submit" value="Add Review"></input>
-              </form>
+        <section className="wrapper style2 special">
+          <div className="inner">
+            <header>
+              <h2>Current Reviews</h2>
               {this.state.reviewCount === 0 &&
                 <p>No reviews available yet!</p>
               }
@@ -130,18 +143,47 @@ class App extends Component {
               {this.state.reviewCount > 1 &&
                 <p>{this.state.reviewCount.toString()} reviews available:</p>
               }
-              <ul>
-                {Object.keys(this.state.reviews).map((key) => {
-                  return <li key={key}>
-                    <p>Author: {this.state.reviews[key][0]}, rating: {this.state.reviews[key][1]}, imdb Tag: {this.state.reviews[key][3]}</p>
-                    <p>{this.state.reviews[key][2]}</p>
-                  </li>
-                })
-                }
-              </ul>
-            </div>
+            </header>
+            {Object.keys(this.state.reviews).map((key) => {
+              return <section className="spotlight" key={key}>
+                <span className="image"><img src={"https://image.tmdb.org/t/p/w500/" + this.state.reviews[key][5]} alt="" /></span>
+                <div className="content">
+                  <header>
+                    <h3>{this.state.reviews[key][4]}</h3>
+                  </header>
+                  <p>Rating: {this.state.reviews[key][1]}, IMDB Tag: {this.state.reviews[key][3]} <br />
+                    Author: {this.state.reviews[key][0]},
+                  </p>
+                  <p>{this.state.reviews[key][2]}</p>
+                </div>
+              </section>
+            })
+            }
           </div>
-        </main>
+        </section>
+
+        <section className="wrapper style1 special">
+          <div className="inner">
+            <header>
+              <h2>Add your own review:</h2>
+              <p>Additional costs to interact with the contract can apply.</p>
+            </header>
+            <form onSubmit={this.addReviewFromSubmit}>
+              <div className="field half first"><input type="text" name="formRating" id="formRating" placeholder="IMDB Tag" onChange={this.handleInputChange} /></div>
+              <div className="field half"><input type="text" name="formRating" id="formRating" placeholder="Rating" onChange={this.handleInputChange} /></div>
+              <div className="field"><textarea name="formReview" id="formReview" placeholder="Review" rows="4" onChange={this.handleInputChange}></textarea></div>
+              <ul className="actions">
+                <li><input type="submit" value="Add Review" /></li>
+              </ul>
+            </form>
+          </div>
+        </section>
+
+        <section id="footer" className="wrapper split style2">
+          <div className="copyright">
+            <p>&copy; Smart Movie Reviews. All rights reserved. Images from <a href="https://www.themoviedb.org/" target="_blank">The Movie Database</a> &amp; <a href="http://www.unsplash.com" target="_blank">Unsplash</a>.</p>
+          </div>
+        </section>
       </div>
     );
   }
