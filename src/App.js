@@ -33,6 +33,9 @@ class App extends Component {
 
   addReviewFromSubmit(e) {
     e.preventDefault();
+    console.log(this.state.formRating);
+    console.log(this.state.formImdbTag);
+    console.log(this.state.formReview);
     this.addReview(this.state.formRating, this.state.formImdbTag, this.state.formReview);
     this.getReviews();
   }
@@ -70,9 +73,9 @@ class App extends Component {
         return results.json();
       }).then(data => {
         if (data.movie_results.length > 0) {
-          console.log(data.movie_results[0]);
-          console.log(data.movie_results[0].title);
-          console.log(data.movie_results[0].poster_path);
+          // console.log(data.movie_results[0]);
+          // console.log(data.movie_results[0].title);
+          // console.log(data.movie_results[0].poster_path);
           reviews[res[4]] = [res[0], res[1].c[0], res[2], res[3], data.movie_results[0].title, data.movie_results[0].backdrop_path];
         } else {
           reviews[res[4]] = [res[0], res[1].c[0], res[2], res[3], "Unknown", "not found"];
@@ -169,7 +172,7 @@ class App extends Component {
               <p>Additional costs to interact with the contract can apply.</p>
             </header>
             <form onSubmit={this.addReviewFromSubmit}>
-              <div className="field half first"><input type="text" name="formRating" id="formRating" placeholder="IMDB Tag" onChange={this.handleInputChange} /></div>
+              <div className="field half first"><input type="text" name="formImdbTag" id="formImdbTag" placeholder="IMDB Tag" onChange={this.handleInputChange} /></div>
               <div className="field half"><input type="text" name="formRating" id="formRating" placeholder="Rating" onChange={this.handleInputChange} /></div>
               <div className="field"><textarea name="formReview" id="formReview" placeholder="Review" rows="4" onChange={this.handleInputChange}></textarea></div>
               <ul className="actions">
